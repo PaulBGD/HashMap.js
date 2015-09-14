@@ -1,0 +1,21 @@
+{
+  "name": "hashmap.js",
+  "version": "1.0.1",
+  "description": "<500 byte library for HashMaps in JavaScript",
+  "main": "src/hashmap.js",
+  "repository": {
+    "type": "git",
+    "url": "git@https://github.com/PaulBGD/HashMap.js.git"
+  },
+  "keywords": [
+    "hashmap",
+    "map",
+    "browser"
+  ],
+  "author": "Paul Sauve <paul@burngames.net> (http://paulb.gd/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PaulBGD/HashMap.js/issues"
+  },
+  "homepage": "https://github.com/PaulBGD/HashMap.js#readme"
+}

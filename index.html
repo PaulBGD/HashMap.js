@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stream</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.5/simplex/bootstrap.min.css" rel="stylesheet" integrity="sha256-4nVETqQoIoCwuephcXpJ501G8B5sgBHb1ZsKU/D476I= sha512-cfSmkkLRDAcUNaJxRRWopCyEGX43UkWCAOl2wErYMBGOQVWwOsZ7IFuXScF9H/6nMGbmsgV4m5/xYfesyvHTxw==" crossorigin="anonymous">
+    <style>
+        h2 {
+            margin: 30px 0 10px;
+        }
+
+        p {
+            color: #444;
+        }
+
+        @media (min-width: 975px) {
+            .padding-top {
+                padding-top: 50px;
+                padding-bottom: 50px;
+            }
+
+            #navbar-side {
+                position: fixed;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 padding-top">
+            <h1><a href="#hashmap-js" name="hashmap-js" id="hashmap-js" class="anchor"></a>HashMap.js</h1>
+
+            <p>&lt; 500 byte library for HashMaps in JavaScript</p>
+
+            <h2><a href="#download" name="download" id="download" class="anchor"></a>Download</h2>
+
+            <p><a href="src/hashmap.js">Development Version</a> <a href="src/hashmap.min.js">Production Version</a></p>
+
+            <h2><a href="#about" name="about" id="about" class="anchor"></a>About</h2>
+
+            <p>HashMap.js is a library which adds HashMaps to JavaScript. While some modern browsers support Maps, this library supports all browsers back to even IE8!</p>
+
+            <p>This library also works well with the <a href="https://github.com/PaulBGD/Stream.js">Stream.js</a> library.</p>
+
+            <h2><a href="#examples" name="examples" id="examples" class="anchor"></a>Examples</h2>
+
+            <p>Setting a value using a complex object as a key:</p>
+            <pre><code class="javascript">var statuses = new HashMap();
+var user = {names: [&#39;Paul&#39;,&#39; PaulBGD&#39;], logged_in: true};
+statuses.put(user, &#39;online&#39;);
+
+console.log(&#39;Paul\&#39;s Status: &#39; + statuses.get(user));
+// =&gt; Paul&#39;s Status: online</code></pre>
+            <p>Getting a value, or adding a default one:</p>
+            <pre><code class="javascript">console.log(&#39;Paul\&#39;s Status: &#39; + statuses.getOrCompute(user, function (user) {
+return database.getStatus(user);
+}));
+// =&gt; Paul&#39;s Status: online</code></pre>
+            <p>Using the <a href="https://github.com/PaulBGD/Stream.js">Stream.js</a> library to get all online usernames:</p>
+            <pre><code class="javascript">new Stream(status.entries)
+.filter(function (entry) { return entry.value == &#39;online&#39; })
+.map(function (entry) { return entry.key.username })
+.forEach(function (username) {
+console.log(username + &#39; is online!&#39;);
+});</code></pre>
+            <h2><a href="#functions" name="functions" id="functions" class="anchor"></a>Functions</h2>
+
+            <h3><code>new HashMap() =&gt; HashMap</code></h3>
+
+            <p>Creates a new HashMap.</p>
+
+            <h3><code>HashMap.prototype.get(key:Object) =&gt; Object</code></h3>
+
+            <p>Returns the value associated with the key</p>
+
+            <h3><code>HashMap.prototype.put(key:Object, value:Object) =&gt; Object</code></h3>
+
+            <p>Sets a value associated with the key, returns the previous value if it was set.</p>
+
+            <h3><code>HashMap.prototype.getOrCompute(key:Object, func:function(key:Object) =&gt; value:Object) =&gt; Object</code></h3>
+
+            <p>Returns the value associated with a key, or sets the association if it is not set.</p>
+
+            <h3><code>HashMap.prototype.remove(key:Object) =&gt; Object</code></h3>
+
+            <p>Removes an entry from the specified key, returns the entry removed if it exists.</p>
+
+            <h3><code>HashMap.prototype.entries =&gt; Array</code></h3>
+
+            <p>An array containing all of the entries.</p>
+
+            <h3><code>HashMap.prototype.size =&gt; Number</code></h3>
+
+            <p>Returns the size of this HashMap</p>
+        </div>
+        <div class="col-md-2 padding-top hidden-xs hidden-sm">
+            <ul id="navbar-side" class="nav nav-pills nav-stacked padding-top">
+                <li><a href="#home" class="spy">Home</a></li>
+                <li><a href="#download" class="spy">Download</a></li>
+                <li><a href="#about" class="spy">About</a></li>
+                <li><a href="#examples" class="spy">Examples</a></li>
+                <li><a href="#functions" class="spy">Functions</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<script src="//cdn.jsdelivr.net/bootstrap.native/0.9.6/bootstrap-native.min.js"></script>
+<script src="src/stream.js"></script>
+<script src="https://raw.githubusercontent.com/domchristie/to-markdown/master/dist/to-markdown.js"></script>
+<script>
+    (function () {
+        var targets = {};
+
+        var spies = document.getElementsByClassName('spy');
+        for (var i = 0, max = spies.length; i < max; i++) {
+            var spy = spies[i];
+            targets[spy.href] = spy.parentNode;
+        }
+
+        var updating = false;
+
+        window.addEventListener('scroll', function () {
+            if (!updating) {
+                updating = true;
+                setTimeout(function () {
+                    update();
+                    updating = false;
+                }, 250);
+            }
+        });
+
+        function update() {
+            var triggered = false;
+            for (var property in targets) {
+                if (targets.hasOwnProperty(property)) {
+                    var target = document.getElementById(property.split('#')[1]);
+                    if (!triggered && target && checkVisible(target)) {
+                        targets[property].classList.add('active');
+                        triggered = true;
+                    } else {
+                        targets[property].classList.remove('active');
+                    }
+                }
+            }
+        }
+
+        function checkVisible(elm) {
+            var vpH = window.innerHeight, // Viewport Height
+                    st = window.scrollY, // Scroll Top
+                    y = offset(elm),
+                    elementHeight = elm.clientHeight;
+
+            return ((y < (vpH + st)) && (y > (st - elementHeight)));
+        }
+
+        function offset(elem) {
+            var y = elem.offsetTop;
+
+            while (elem = elem.offsetParent) {
+                y += elem.offsetTop;
+            }
+
+            return y;
+        }
+
+        update();
+    })();
+</script>
+</body>
+</html>
