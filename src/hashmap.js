@@ -6,7 +6,7 @@
      * @constructor
      */
     function HashMap() {
-        this.entries = [];
+        this.entries = {};
         this.length = 0;
     }
 
@@ -18,7 +18,9 @@
      * @returns {*} the value stored, or null
      */
     prototype['get'] = function (key) {
-        return this.contains(key) ? this.entries[calculateHash(key)].value : null;
+        var hash = calculateHash(key);
+        var entry = this.entries[hash];
+        return entry ? entry.value : null;
     };
 
     /**
@@ -34,91 +36,73 @@
         if (!previous) {
             this.length++;
         }
-        return previous;
-    };
-
-    /**
-     * Returns the value associated with a key, or sets the association if it is not set
-     * @param key the key to get the value for
-     * @param func a function with the parameter "key" which returns a new value
-     * @returns {*} the value
-     */
-    prototype['getOrCompute'] = function (key, func) {
-        var hash = calculateHash(key);
-        var value = this.entries[hash];
-        if (!value) {
-            value = func(key);
-            this.put(key, value);
-        }
-        return value;
+        return previous ? previous.value : null;
     };
 
     /**
      * Removes an entry
      * @param key the key to remove the entry before
-     * @returns {*} the removed entry
+     * @returns {*} the removed value
      */
     prototype['remove'] = function (key) {
-        var remove = this.get(key);
+        var hash = calculateHash(key);
+        var remove = this.entries[hash];
         if (remove) {
             this.length--;
+            this.entries[hash] = undefined;
         }
-        return remove;
+        return remove.value;
     };
 
-    /**
-     * Checks if an entry exists for an associated key
-     * @param key the key to check for an entry
-     * @returns {boolean} true if there is an entry
-     */
-    prototype['contains'] = function(key) {
-        return !!this.entries[calculateHash(key)];
+    prototype['toArray'] = function () {
+        var arr = [];
+        for (var property in this.entries) {
+            if (this.entries.hasOwnProperty(property)) {
+                var value = this.entries[property];
+                if (value != null) {
+                    arr.push(value);
+                }
+            }
+        }
+        return arr;
     };
 
-    function calculateHash(object, computed) {
-        computed = computed || [];
+    function calculateHash(object) {
         var type = (typeof object).charAt(0);
         if (type == 's') {
             var hash = 0;
             for (var i = 0; i < object.length; i++) {
-                hash = 10 * i * object.charCodeAt(i);
+                hash = 31 * hash + (object.charCodeAt(i) * 2);
             }
             return hash;
         } else if (type == 'n') {
-            return object;
+            var remainder = object % 1;
+            return remainder == 0 ? object : remainder * 100 + (object - remainder);
         } else if (type == 'b') {
-            return object ? 15 : 25;
+            return object ? 1231 : 1237;
         } else if (type == 'o') {
             if (object === null) {
                 return 19;
             } else {
                 hash = 0;
-                i = 0;
                 for (var property in object) {
                     if (object.hasOwnProperty(property)) {
                         var value = object[property];
-                        var previouslyComputed = false;
-                        var length = computed.length;
-                        while (length--) {
-                            if (computed[length] === value) {
-                                previouslyComputed = true;
-                                break;
-                            }
-                        }
-                        if (!previouslyComputed) {
-                            computed.push(value);
-                            hash += ++i * (calculateHash(value, computed) + calculateHash(property));
-                        }
+                        hash = hash * calculateHash(property) + calculateHash(value);
                     }
                 }
                 return hash;
             }
         } else if (type == 'u') {
-            return 13;
+            return calculateHash(String(object));
         } else {
-            return calculateHash(type.toString()); // symbols, functions, and stuff
+            return 0; // symbols, functions, and stuff that we can't calculate a hashcode for
         }
     }
 
-    global['HashMap'] = HashMap;
-})(typeof module != 'undefined' ? module['exports'] : this);
+    if (typeof module != 'undefined') {
+        module['exports'] = HashMap;
+    } else {
+        global['HashMap'] = HashMap;
+    }
+})(this);

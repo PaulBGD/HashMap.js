@@ -36,7 +36,7 @@ console.log('Paul\'s Status: ' + statuses.getOrCompute(user, function (user) {
 Using the [Stream.js](https://github.com/PaulBGD/Stream.js) library to get all online usernames:
 
 ```javascript
-new Stream(status.entries)
+new Stream(status.toArray())
     .filter(function (entry) { return entry.value == 'online' })
     .map(function (entry) { return entry.key.username })
     .forEach(function (username) {
@@ -58,15 +58,11 @@ Returns the value associated with the key
 
 Sets a value associated with the key, returns the previous value if it was set.
 
-### `HashMap.prototype.getOrCompute(key:Object, func:function(key:Object) => value:Object) => Object`
-
-Returns the value associated with a key, or sets the association if it is not set.
-
 ### `HashMap.prototype.remove(key:Object) => Object`
 
 Removes an entry from the specified key, returns the entry removed if it exists.
 
-### `HashMap.prototype.entries => Array`
+### `HashMap.prototype.toArray() => Array`
 
 An array containing all of the entries.
 
