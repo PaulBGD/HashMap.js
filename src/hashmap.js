@@ -1,6 +1,12 @@
 (function (global) {
 
     /**
+     * A unique object to symbolize removal
+     * @type {{}}
+     */
+    var REMOVE = {};
+
+    /**
      * Creates a new HashMap.
      * All keys are calculated down to a numerical hash.
      * @constructor
@@ -22,14 +28,14 @@
         var bucket = this.entries[hash];
 
         if (bucket) {
-            for (var i = 0; i < bucket.length; i++) {
-                if (bucket[i].key === key) {
-                    return bucket[i].value;
+            var length = bucket.length;
+            while (length--) {
+                var obj = bucket[length];
+                if (obj.key === key) {
+                    return obj.value;
                 }
             }
         }
-
-        return null;
     };
 
     /**
@@ -42,19 +48,23 @@
         var hash = calculateHash(key);
         var bucket = this.entries[hash];
 
-        if (!bucket) {
-            this.entries[hash] = bucket = [];
-        }
+        var obj = {key: key, value: value};
+        if (bucket) {
+            var length = bucket.length;
+            while (length--) {
+                var entry = bucket[length];
+                if (entry.key === key) {
+                    var oldValue = entry.value;
+                        entry.value = value;
 
-        for (var i = 0; i < bucket.length; i++) {
-            if (bucket[i].key === key) {
-                var oldValue = bucket[i].value;
-                bucket[i].value = value;
-                return oldValue;
+                    return oldValue;
+                }
             }
+            bucket.push(obj);
+        } else {
+            this.entries[hash] = [obj];
         }
 
-        bucket.push({key: key, value: value});
         this.length++;
     };
 
@@ -64,33 +74,19 @@
      * @returns {*} the removed value
      */
     prototype['remove'] = function (key) {
-        var hash = calculateHash(key);
-        var bucket = this.entries[hash];
-
-        if (bucket) {
-            for (var i = 0; i < bucket.length; i++) {
-                if (bucket[i].key === key) {
-                    var value = bucket[i].value;
-
-                    if (bucket.length > 1) {
-                        bucket.splice(i, 1);
-                    } else {
-                        delete this.entries[hash];
-                    }
-
-                    this.length--;
-                    return value;
-                }
-            }
-        }
+        return this.put(key, REMOVE);
     };
 
     prototype['toArray'] = function () {
         var arr = [];
         for (var hash in this.entries) {
             if (this.entries.hasOwnProperty(hash)) {
-                for (var i = 0; i < this.entries[hash].length; i++) {
-                    arr.push(this.entries[hash][i].value);
+                var bucket = this.entries[hash];
+                for (var i = 0, max = bucket.length; i < max; i++) {
+                    var entry = bucket[i];
+                    if (entry) {
+                        arr.push(entry.value);
+                    }
                 }
             }
         }
@@ -102,7 +98,7 @@
         if (type == 's') {
             var hash = 0;
             for (var i = 0; i < object.length; i++) {
-                hash = 31 * hash + (object.charCodeAt(i) * 2);
+                hash = 31 * hash + (object.charCodeAt(i) * 2); // the 2 makes it more unique
             }
             return hash;
         } else if (type == 'n') {
