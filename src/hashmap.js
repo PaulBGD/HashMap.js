@@ -101,17 +101,23 @@
     };
 
     function calculateHash(object) {
+        if (!object) {
+            return 0;
+        }
+        var hash = object.toString.hash;
+        if (hash !== undefined) {
+            return hash;
+        }
         var type = (typeof object).charAt(0);
         if (type == 's') {
-            var hash = 0;
+            hash = 0;
             for (var i = 0; i < object.length; i++) {
                 hash = 31 * hash + (object.charCodeAt(i) * 2); // the 2 makes it more unique
             }
-            return hash;
         } else if (type == 'n') {
-            return object; // since we use an object now which converts to strings, decimals are fine
+            hash = object; // since we use an object now which converts to strings, decimals are fine
         } else if (type == 'b') {
-            return object ? 1231 : 1237;
+            hash = object ? 1231 : 1237;
         } else if (type == 'o' && object) { // null is an object, so skip it
             hash = 0;
             for (var property in object) {
@@ -120,10 +126,11 @@
                     hash = hash * calculateHash(property) + calculateHash(value);
                 }
             }
-            return hash;
         } else {
-            return 0; // symbols, functions, undefined, and stuff that we can't calculate a hashcode for
+            hash = 0; // symbols, functions, undefined, and stuff that we can't calculate a hashcode for
         }
+        object.toString.hash = hash; // store our hash for future use in a place where it will never been seen
+        return hash;
     }
 
     if (typeof module != 'undefined') {
