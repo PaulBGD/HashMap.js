@@ -1,12 +1,6 @@
 (function (global) {
 
     /**
-     * A unique object to symbolize removal
-     * @type {{}}
-     */
-    var REMOVE = {};
-
-    /**
      * Creates a new HashMap.
      * All keys are calculated down to a numerical hash.
      * @constructor
@@ -16,88 +10,98 @@
         this.length = 0;
     }
 
-    var prototype = HashMap.prototype;
+    HashMap.prototype = {
+        /**
+         * Gets the value associated with a certain key
+         * @param key the key to get the value for
+         * @returns {*} the value stored, or undefined
+         */
+        get: function (key) {
+            var result = this._find(key);
+            return result.v;
+        },
 
-    /**
-     * Gets the value associated with a certain key
-     * @param key the key to get the value for
-     * @returns {*} the value stored, or null
-     */
-    prototype['get'] = function (key) {
-        var hash = calculateHash(key);
-        var bucket = this.entries[hash];
+        /**
+         * Puts a value associated with a key
+         * @param key the key to set the value for
+         * @param value the value to set, omit to remove key
+         * @returns {*} the previous value
+         */
+        put: function (key, value) {
+            var result = this._find(key);
+            var obj = {key: key, value: value};
 
-        if (bucket) {
-            var length = bucket.length;
-            while (length--) {
-                var obj = bucket[length];
-                if (obj.key === key) {
-                    return obj.value;
+            if (result.b) {
+                if (result.e) {
+                    result.e.value = value;
+                } else {
+                    result.b.push(obj);
+                    this.length++;
                 }
+            } else {
+                this.entries[result.h] = [obj];
+                this.length++;
             }
-        }
-    };
 
-    /**
-     * Puts a value associated with a key
-     * @param key the key to set the value for
-     * @param value the value to set
-     * @returns {*} the previous value
-     */
-    prototype['put'] = function (key, value) {
-        var hash = calculateHash(key);
-        var bucket = this.entries[hash];
+            return result.v;
+        },
 
-        var obj = {key: key, value: value};
-        if (bucket) {
-            var length = bucket.length;
-            while (length--) {
-                var entry = bucket[length];
-                if (entry.key === key) {
-                    var oldValue = entry.value;
-                    if (value == REMOVE) {
-                        if (bucket.length > 1) {
-                            bucket.splice(length, 1);
-                        } else {
-                            this.entries[hash] = null;
+        /**
+         * Removes an entry
+         * @param key the key to remove the entry before
+         * @returns {*} the removed value
+         */
+        remove: function (key) {
+            var result = this._find(key);
+
+            if (result.e) {
+                if (result.b.length > 1) {
+                    result.b.splice(result.i, 1);
+                } else {
+                    delete this.entries[result.h];
+                }
+                this.length--;
+            }
+
+            return result.v;
+        },
+
+        toArray: function () {
+            var arr = [];
+            for (var hash in this.entries) {
+                if (this.entries.hasOwnProperty(hash)) {
+                    var bucket = this.entries[hash];
+                    for (var i = 0, max = bucket.length; i < max; i++) {
+                        var entry = bucket[i];
+                        if (entry) {
+                            arr.push(entry.value);
                         }
-                    } else {
-                        entry.value = value;
-                    }
-                    return oldValue;
-                }
-            }
-            bucket.push(obj);
-        } else {
-            this.entries[hash] = [obj];
-        }
-
-        this.length++;
-    };
-
-    /**
-     * Removes an entry
-     * @param key the key to remove the entry before
-     * @returns {*} the removed value
-     */
-    prototype['remove'] = function (key) {
-        return this.put(key, REMOVE);
-    };
-
-    prototype['toArray'] = function () {
-        var arr = [];
-        for (var hash in this.entries) {
-            if (this.entries.hasOwnProperty(hash)) {
-                var bucket = this.entries[hash];
-                for (var i = 0, max = bucket.length; i < max; i++) {
-                    var entry = bucket[i];
-                    if (entry) {
-                        arr.push(entry.value);
                     }
                 }
             }
+            return arr;
+        },
+
+        _find: function (key) {
+            var result = {};
+            result.h = calculateHash(key);
+            result.b = this.entries[result.h];
+
+            if (result.b) {
+                var length = result.b.length;
+                while (length--) {
+                    var entry = result.b[length];
+                    if (entry.key === key) {
+                        result.i = length;
+                        result.v = entry.value;
+                        result.e = entry;
+                        break;
+                    }
+                }
+            }
+            
+            return result;
         }
-        return arr;
     };
 
     function calculateHash(object) {
