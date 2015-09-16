@@ -19,8 +19,17 @@
      */
     prototype['get'] = function (key) {
         var hash = calculateHash(key);
-        var entry = this.entries[hash];
-        return entry ? entry.value : null;
+        var bucket = this.entries[hash];
+
+        if (bucket) {
+            for (var i = 0; i < bucket.length; i++) {
+                if (bucket[i].key === key) {
+                    return bucket[i].value;
+                }
+            }
+        }
+
+        return null;
     };
 
     /**
@@ -31,12 +40,22 @@
      */
     prototype['put'] = function (key, value) {
         var hash = calculateHash(key);
-        var previous = this.entries[hash];
-        this.entries[hash] = {key: key, value: value};
-        if (!previous) {
-            this.length++;
+        var bucket = this.entries[hash];
+
+        if (!bucket) {
+            this.entries[hash] = bucket = [];
         }
-        return previous ? previous.value : null;
+
+        for (var i = 0; i < bucket.length; i++) {
+            if (bucket[i].key === key) {
+                var oldValue = bucket[i].value;
+                bucket[i].value = value;
+                return oldValue;
+            }
+        }
+
+        bucket.push({key: key, value: value});
+        this.length++;
     };
 
     /**
@@ -46,21 +65,32 @@
      */
     prototype['remove'] = function (key) {
         var hash = calculateHash(key);
-        var remove = this.entries[hash];
-        if (remove) {
-            this.length--;
-            this.entries[hash] = undefined;
+        var bucket = this.entries[hash];
+
+        if (bucket) {
+            for (var i = 0; i < bucket.length; i++) {
+                if (bucket[i].key === key) {
+                    var value = bucket[i].value;
+
+                    if (bucket.length > 1) {
+                        bucket.splice(i, 1);
+                    } else {
+                        delete this.entries[hash];
+                    }
+
+                    this.length--;
+                    return value;
+                }
+            }
         }
-        return remove.value;
     };
 
     prototype['toArray'] = function () {
         var arr = [];
-        for (var property in this.entries) {
-            if (this.entries.hasOwnProperty(property)) {
-                var value = this.entries[property];
-                if (value != null) {
-                    arr.push(value);
+        for (var hash in this.entries) {
+            if (this.entries.hasOwnProperty(hash)) {
+                for (var i = 0; i < this.entries[hash].length; i++) {
+                    arr.push(this.entries[hash][i].value);
                 }
             }
         }
