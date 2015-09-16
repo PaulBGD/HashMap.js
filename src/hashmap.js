@@ -76,27 +76,20 @@
             }
             return hash;
         } else if (type == 'n') {
-            var remainder = object % 1;
-            return remainder == 0 ? object : remainder * 100 + (object - remainder);
+            return object; // since we use an object now which converts to strings, decimals are fine
         } else if (type == 'b') {
             return object ? 1231 : 1237;
-        } else if (type == 'o') {
-            if (object === null) {
-                return 19;
-            } else {
-                hash = 0;
-                for (var property in object) {
-                    if (object.hasOwnProperty(property)) {
-                        var value = object[property];
-                        hash = hash * calculateHash(property) + calculateHash(value);
-                    }
+        } else if (type == 'o' && object) { // null is an object, so skip it
+            hash = 0;
+            for (var property in object) {
+                if (object.hasOwnProperty(property)) {
+                    var value = object[property];
+                    hash = hash * calculateHash(property) + calculateHash(value);
                 }
-                return hash;
             }
-        } else if (type == 'u') {
-            return calculateHash(String(object));
+            return hash;
         } else {
-            return 0; // symbols, functions, and stuff that we can't calculate a hashcode for
+            return 0; // symbols, functions, undefined, and stuff that we can't calculate a hashcode for
         }
     }
 
