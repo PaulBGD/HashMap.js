@@ -55,8 +55,15 @@
                 var entry = bucket[length];
                 if (entry.key === key) {
                     var oldValue = entry.value;
+                    if (value == REMOVE) {
+                        if (bucket.length > 1) {
+                            bucket.splice(length, 1);
+                        } else {
+                            this.entries[hash] = null;
+                        }
+                    } else {
                         entry.value = value;
-
+                    }
                     return oldValue;
                 }
             }
